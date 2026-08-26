@@ -13,4 +13,6 @@ blocks: ["10"]
 
 Shared requirement #4 wants real persistence: schema as migrations, right indexes. Tables needed for images, tags, embeddings, posts, suggestions, approvals/rejections.
 
+This ticket ALSO owns the persistence bootstrap nothing else covers: the `compose.yaml` Postgres service (fresh repo — no infra exists yet) and the migration runner choice.
+
 Decide table shapes and relations, the indexes the query patterns actually need, idempotency representation for retried jobs (unique job keys?), and the per-call cost ledger's shape (shared requirement #7: attributed per call, budget guard).

@@ -28,13 +28,12 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 
 ## Not yet specified
 
-- Actual threshold values and the defended top-1 precision number — graduates once the labeled eval set exists and the guard's rules are fixed.
+- Actual similarity-threshold values and the defended top-1 precision number — graduate once the labeled eval set exists and the sweep has run.
 - Vision prompt wording and reliability quirks (flag-rate behavior on real batches) — graduates after the first real pipeline runs.
 - Exact structure/phrasing of "no confident match" reasons — graduates with the guard rules ticket.
-- Seed + run story details (compose service layout) — graduates once batch runner and data model are chosen.
-- Eval-set growth policy during tuning ("grow slightly as you go") — graduates with eval-set construction.
-- Live free-tier RPM/RPD verification and structured-output refusal payload shape — one cheap verification pass during pipeline implementation.
+- Seed + run story details (compose service layout beyond Postgres, seed command shape) — graduates once batch runner and data model are chosen.
 - Eval-set growth policy during tuning ("grow slightly as you go") — graduates when the first real precision numbers exist.
+- Live free-tier RPM/RPD verification and structured-output refusal payload shape — one cheap verification pass during pipeline implementation.
 
 ## Out of scope
 
