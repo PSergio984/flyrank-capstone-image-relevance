@@ -3,8 +3,8 @@ id: 01
 title: Provision a Gemini API key
 label: wayfinder:task
 hitl: true
-status: open
-assignee:
+status: closed
+assignee: PSergio984
 blocked-by: []
 blocks: []
 ---
@@ -21,3 +21,9 @@ The build needs a Gemini API key (vision + embeddings, free tier, no credit card
 Resolves when the key exists and one cheap smoke call succeeds.
 
 **Scaffolded already**: `.env` (gitignored) and `.env.example` exist with `GEMINI_API_KEY`, `PORT`, `DATABASE_URL`, `ADMIN_TOKEN`. Remaining human steps: 1–2 above, then paste the key into `.env`'s `GEMINI_API_KEY=`.
+
+## Resolution
+
+Human generated the key into `.env` (never shown, never committed). Smoke call: `GET v1beta/models` → **HTTP 200**, 50 models visible.
+
+**Live-API correction to the research findings**: the stable Flash family is **`gemini-2.5-flash`** (plus aliases `gemini-flash-latest`, `gemini-2.5-flash-lite`) — the research doc's `gemini-3.7-flash` naming does not exist on the live API; vision calls pin `gemini-2.5-flash` via a config constant so alias drift is one-line changeable. Embeddings confirmed present exactly as decided: `gemini-embedding-001` (and `gemini-embedding-2`).

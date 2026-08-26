@@ -8,7 +8,7 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 
 ## Notes
 
-- **Domain**: vision-AI backend — Gemini Flash (`gemini-3.7-flash` per the research findings) classifies ~45 images into validated tag JSON; captions and post text are embedded into one semantic space; a mismatch guard (tags + similarity threshold + confidence) rejects wrong pairings with explanations before a human sees them.
+- **Domain**: vision-AI backend — Gemini Flash (`gemini-2.5-flash` per live-API verification) classifies ~45 images into validated tag JSON; captions and post text are embedded (`gemini-embedding-001` @ 768 dims) into one semantic space; a mismatch guard (tags + similarity threshold + confidence) rejects wrong pairings with explanations before a human sees them.
 - **Locked decisions** (charting session): destination = submitted capstone · fresh dedicated repo (this one) · Node.js + Express · Gemini Flash free tier for vision + embeddings · core Section 6 boxes only, stretch goals out of scope · tracker = this local-markdown directory.
 - **Standing preferences**: user communicates tersely — keep narration compact. Interview defense is the standing goal: every build choice must stay explainable by the user in 2–3 lines. Windows / PowerShell 5.1 (no `&&`). Node ≥18 (local: v22). $0 iron rule — anything asking for a credit card is the wrong path. Never trust invalid model output. Evidence pasted as you go; at least one meaningful commit per working session.
 - **Skills**: when working any grilling ticket, call the Skill tool twice — "grilling" and "domain-modeling". Prototype tickets call "prototype". Research tickets call "research".
@@ -18,6 +18,8 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 ## Decisions so far
 
 <!-- one line per closed ticket; zoom the linked ticket for detail -->
+
+- [Provision a Gemini API key](tickets/01-provision-gemini-key.md): key live in `.env` (never committed); smoke call 200; vision pinned to `gemini-2.5-flash` (live-API correction of the research naming), embeddings `gemini-embedding-001` confirmed.
 
 - [Research Gemini Flash — image understanding, structured output, embeddings](tickets/02-research-gemini-apis.md): findings on branch `research/gemini-apis` — Flash vision free via `@google/genai`; JSON mode requires mandatory Zod validation; embed with `gemini-embedding-001` at 768 dims + manual L2 norm; persist model+dims per vector; batch fits free tier with pacing + backoff.
 - [Corpus strategy — where the images come from and how they live in the repo](tickets/03-corpus-strategy.md): commit ≤800px corpus (~3–6 MB) AND deterministic fetch script, anchored by a provenance/licensing manifest; animal set engineered with fox/wolf/husky lookalikes.
