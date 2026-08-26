@@ -19,6 +19,8 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 
 <!-- one line per closed ticket; zoom the linked ticket for detail -->
 
+- [Research Gemini Flash — image understanding, structured output, embeddings](tickets/02-research-gemini-apis.md): findings on branch `research/gemini-apis` — Flash vision free via `@google/genai`; JSON mode requires mandatory Zod validation; embed with `gemini-embedding-001` at 768 dims + manual L2 norm; persist model+dims per vector; batch fits free tier with pacing + backoff.
+
 ## Not yet specified
 
 - Actual threshold values and the defended top-1 precision number — graduates once the labeled eval set exists and the guard's rules are fixed.
@@ -26,6 +28,7 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 - Exact structure/phrasing of "no confident match" reasons — graduates with the guard rules ticket.
 - Seed + run story details (compose service layout) — graduates once batch runner and data model are chosen.
 - Eval-set growth policy during tuning ("grow slightly as you go") — graduates with eval-set construction.
+- Live free-tier RPM/RPD verification and structured-output refusal payload shape — one cheap verification pass during pipeline implementation.
 - The image-gathering work ticket (AFK) that the corpus strategy decision will spawn.
 - Eval-set construction ticket (HITL labeling) — sharpens once posts source and corpus strategy are decided.
 
