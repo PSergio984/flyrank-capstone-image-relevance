@@ -20,6 +20,11 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 <!-- one line per closed ticket; zoom the linked ticket for detail -->
 
 - [Research Gemini Flash — image understanding, structured output, embeddings](tickets/02-research-gemini-apis.md): findings on branch `research/gemini-apis` — Flash vision free via `@google/genai`; JSON mode requires mandatory Zod validation; embed with `gemini-embedding-001` at 768 dims + manual L2 norm; persist model+dims per vector; batch fits free tier with pacing + backoff.
+- [Corpus strategy — where the images come from and how they live in the repo](tickets/03-corpus-strategy.md): commit ≤800px corpus (~3–6 MB) AND deterministic fetch script, anchored by a provenance/licensing manifest; animal set engineered with fox/wolf/husky lookalikes.
+- [Where do the blog posts come from?](tickets/04-posts-source.md): 12 hand-written seed posts in `seed/posts/`, including ≥2 deliberately matchless and ≥2 boundary-strainer posts.
+- [Which runner carries the background batch jobs?](tickets/05-batch-runner.md): pg-boss on the existing Postgres — idempotent natural-key jobs, per-call cost ledger rows written in-handler, budget guard, SQL-visible progress.
+- [What is the image metadata schema the vision model must return?](tickets/06-metadata-schema.md): shallow strict schema, coarse `category` enum + fine `subject` for guard discrimination; Zod safeParse is the only trust boundary; confidence <0.70 flags instead of accepting; repair-once then quarantine.
+- [How are image and post vectors embedded and stored?](tickets/07-embeddings-and-vectors.md): `gemini-embedding-001` @ 768 dims, SEMANTIC_SIMILARITY, manual L2 norm; plain `real[]` columns persisting model+dims; cosine computed in Node over ~50 rows.
 
 ## Not yet specified
 
@@ -29,8 +34,7 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 - Seed + run story details (compose service layout) — graduates once batch runner and data model are chosen.
 - Eval-set growth policy during tuning ("grow slightly as you go") — graduates with eval-set construction.
 - Live free-tier RPM/RPD verification and structured-output refusal payload shape — one cheap verification pass during pipeline implementation.
-- The image-gathering work ticket (AFK) that the corpus strategy decision will spawn.
-- Eval-set construction ticket (HITL labeling) — sharpens once posts source and corpus strategy are decided.
+- Eval-set growth policy during tuning ("grow slightly as you go") — graduates when the first real precision numbers exist.
 
 ## Out of scope
 
