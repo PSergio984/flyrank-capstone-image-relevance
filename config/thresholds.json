@@ -29,6 +29,6 @@
     "total": 12,
     "model_vision": "gemini-2.5-flash",
     "model_embedding": "gemini-embedding-001@768",
-    "sweeptime": "2026-08-26T16:30:33.323Z"
+    "sweeptime": "2026-08-26T17:10:02.690Z"
   }
 }

@@ -8,23 +8,21 @@ import 'dotenv/config';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 
-const captions = {
-  'red fox': 'A red fox with orange fur and white tail tip prowls through snow.',
-  'gray wolf': 'A gray wolf with thick gray coat and amber eyes stands on mossy rock.',
-  'siberian husky': 'A Siberian husky with blue eyes and wolf-like double coat pants in snow.',
-  'brown bear': 'A brown bear with massive shoulders fishes for salmon in a river.',
-  'white-tailed deer': 'A white-tailed deer with reddish coat grazes in a meadow at dawn.',
-  'alpine mountain': 'Snow-covered alpine peaks glow pink at sunrise above a glassy tarn.',
-  'forest trail': 'A misty forest trail winds through mossy oaks and ferns at dawn.',
-  'desert dune': 'Golden desert dunes ripple under warm light at golden hour.',
-  'lake reflection': 'A calm lake reflects alpine peaks and sky like a mirror.',
-  'city skyline': 'A city skyline of glass towers glows violet at dusk with lights flickering on.',
-  'historic building': 'A historic brick building with ornate facade stands on an urban street.',
-  'pasta dish': 'A steaming plate of pasta with rich tomato sauce and herbs.',
-  'fruit bowl': 'A bowl of mixed fresh fruit shines with berries and citrus.',
-  'red car': 'A red vintage car parked on a city street gleams in sunlight.',
-  'mountain bike': 'A mountain bike leans against a rock on a forest trail.',
-};
+function toCaption(entry) {
+  // Per-image distinct caption derived from manifest notes + subject, ensures embedding diversity
+  // Keeps single sentence 8-160 chars, distinct per image for meaningful similarity ranking
+  let note = (entry.notes || entry.subject).split(' - ')[0].trim();
+  // Normalize: remove redundant subject duplication, lower case
+  note = note.toLowerCase();
+  // Build sentence: "A {subject} {note}."
+  let caption = `A ${entry.subject} ${note}.`;
+  caption = caption.charAt(0).toUpperCase() + caption.slice(1);
+  // Fix double subject repeats like "A red fox fox on snow" -> "A red fox on snow"
+  caption = caption.replace(new RegExp(`A ${entry.subject} ${entry.subject}`, 'i'), `A ${entry.subject}`);
+  if (caption.length > 160) caption = caption.slice(0, 157) + '...';
+  if (caption.length < 8) caption = `A ${entry.subject} in its natural habitat.`;
+  return caption;
+}
 
 function parsePost(filePath) {
   const raw = fs.readFileSync(filePath, 'utf8');
@@ -44,7 +42,7 @@ async function main() {
   try {
     console.log('Seeding images...');
     for (const entry of manifest) {
-      const caption = captions[entry.subject] || `A photo of ${entry.subject}.`;
+      const caption = toCaption(entry);
       // One deliberately flagged image for Probe 1: pick landscape-desert-02
       const isFlaggedDemo = entry.id === 'landscape-desert-02';
       const confidence = isFlaggedDemo ? 0.60 : 0.92;

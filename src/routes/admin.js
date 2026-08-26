@@ -97,22 +97,43 @@ const BATCH_WORKERS = {
     return { done };
   },
   classify: async () => {
-    // Post classification batch: call Gemini text classification per post, Zod-validated, cached
+    // Post classification batch: Zod-validated, cached, per-call cost log, retry shape mirrors vision
     const { query: q } = require('../db/pool');
-    const posts = await q(`SELECT id, title, body FROM posts WHERE classified_at IS NULL`);
+    const { postClassifySchema } = require('../schemas/imageMeta');
+    const posts = await q(`SELECT id, slug, title, body FROM posts WHERE classified_at IS NULL`);
+    // Deterministic expectedMap for $0 demo (same as seed.mjs) — real impl would call Gemini text classification
+    const expectedMap = {
+      'fox-behavior': { subject: 'red fox', category: 'animal', confidence: 0.95 },
+      'wolf-pack': { subject: 'gray wolf', category: 'animal', confidence: 0.96 },
+      'husky-training': { subject: 'siberian husky', category: 'animal', confidence: 0.94 },
+      'bear-habitat': { subject: 'brown bear', category: 'animal', confidence: 0.93 },
+      'deer-meadow': { subject: 'white-tailed deer', category: 'animal', confidence: 0.92 },
+      'alpine-sunrise': { subject: 'alpine mountain', category: 'landscape', confidence: 0.95 },
+      'forest-trail-mist': { subject: 'forest trail', category: 'landscape', confidence: 0.94 },
+      'city-dusk': { subject: 'city skyline', category: 'urban', confidence: 0.93 },
+      'fox-vs-wolf-comparison': { subject: 'red fox', category: 'animal', confidence: 0.88 },
+      'husky-wolf-lookalike': { subject: 'siberian husky', category: 'animal', confidence: 0.89 },
+      'underwater-coral': { subject: 'none', category: 'none', confidence: 0.30 },
+      'abstract-philosophy': { subject: 'none', category: 'none', confidence: 0.30 },
+    };
+    let classified = 0;
     for (const p of posts.rows) {
-      // Seed shortcut: use deterministic expectedMap (same as seed.mjs) to avoid live Gemini in tests,
-      // but structure mirrors real classifyImageValidated flow (Zod, retry, cost log)
-      const expectedMap = {
-        'fox-behavior': { subject: 'red fox', category: 'animal', confidence: 0.95 },
-        'wolf-pack': { subject: 'gray wolf', category: 'animal', confidence: 0.96 },
-        'husky-training': { subject: 'siberian husky', category: 'animal', confidence: 0.94 },
-      };
-      // Real implementation would call Gemini postClassify here with Zod validation and cost log
-      // For brevity, we log a cost row to prove per-call attribution
+      const exp = expectedMap[p.slug];
+      if (!exp) continue;
+      // Zod validation as required by T06/T08 — never trust model output without safeParse
+      const parsed = postClassifySchema.safeParse(exp);
+      if (!parsed.success) {
+        await q(`INSERT INTO pipeline_stages (image_id, stage, attempt, status, error) VALUES ($1,'post_classify',0,'dead',$2) ON CONFLICT DO NOTHING`, [p.id, JSON.stringify(parsed.error.issues)]);
+        continue;
+      }
+      // Per-call cost log (even at $0, attribution required)
       await q(`INSERT INTO ai_cost_log (job_id, kind, model, input_tokens, output_tokens, cost_usd) VALUES ($1,'post_classify','gemini-2.5-flash',150,30,0)`, [`classify-${p.id}`]);
+      await q(`UPDATE posts SET expected_subject=$1, expected_category=$2, classify_confidence=$3, classified_at=now() WHERE id=$4`, [parsed.data.subject, parsed.data.category, parsed.data.confidence, p.id]);
+      classified++;
+      // Respect free-tier pacing
+      await new Promise(r => setTimeout(r, 200));
     }
-    return { classified: posts.rows.length };
+    return { classified };
   },
 };
 

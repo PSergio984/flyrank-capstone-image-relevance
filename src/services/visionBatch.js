@@ -5,7 +5,7 @@ const { query } = require('../db/pool');
 const { classifyImageValidated } = require('../gemini/vision');
 const { FLAG_FLOOR } = require('../gemini/config');
 
-const MAX_RETRIES = 2;
+const MAX_RETRIES = 5;
 const BUDGET_USD_CAP = parseFloat(process.env.BUDGET_USD || '10');
 
 async function checkBudgetGuard() {
@@ -28,7 +28,9 @@ async function runVisionBatch({ concurrency = 2 } = {}) {
   let processed = 0, flagged = 0, quarantined = 0;
 
   for (const img of images.rows) {
-    // Idempotency: claim pipeline_stages row
+    // Per-call budget guard (ticket 09: SUM(cost) vs cap checked before dispatching new batch work)
+    await checkBudgetGuard();
+    // Idempotency: claim pipeline_stages row (natural-key idempotency per ticket 05)
     const stage = await query(`SELECT status FROM pipeline_stages WHERE image_id=$1 AND stage='vision'`, [img.id]);
     if (stage.rows.length > 0 && stage.rows[0].status === 'done') {
       continue; // already done, idempotent skip
