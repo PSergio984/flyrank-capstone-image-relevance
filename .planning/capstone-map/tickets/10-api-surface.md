@@ -26,7 +26,7 @@ Public plane:
 
 Admin plane (`Authorization: Bearer $ADMIN_TOKEN` when set; open without it in dev so probes stay simple):
 
-- `POST /admin/probes/force-candidate` `{post_id, image_id}` — feeds ANY pair through all three gates directly, persists the resulting suggestion (`rejected_by_guard` or `approved`). Probe 3's mechanism.
+- `POST /admin/probes/force-candidate` `{post_id, image_id}` — feeds ANY pair through all three gates directly and persists the outcome: refusal → suggestion row with status `rejected_by_guard`; pass → suggestion row with status `pending`, entering the normal human review flow (the machine never self-approves; `review_events` is written only by human actions). Probe 3's mechanism.
 - `POST /admin/jobs/vision-batch` · `/embeddings-batch` · `/classify-posts` — enqueue batch work through pg-boss; 409 if a batch for that stage is already queued/running (no double-dispatch).
 - `GET /admin/pipeline` — stage counts, dead-letter rows (the failure alert surface), and cost-ledger totals by kind. Probe 6 evidence reads from here or the ledger directly.
 

@@ -21,7 +21,7 @@ Fix: decision order and inputs (subject-level semantics vs category vs similarit
 
 **Decision: three ordered gates over an eligibility filter, with post-side expectations from a classification stage — never from eval labels.**
 
-**Post expectations at runtime**: each post passes through a text-classification batch job (`post-classify-v1` versioned prompt, same Zod validation stack, result cached on the post row) producing `{subject, category, confidence}`. Runtime knows the fox post expects *red fox* because a model read the post — eval labels stay out of production code paths. This also legitimizes the `post-classify` cost kind in the ledger (~12 extra calls, trivial).
+**Post expectations at runtime**: each post passes through a text classification stage (`post_classify` versioned prompt, same Zod validation stack, result cached on the post row) producing `{subject, category, confidence}`. Runtime knows the fox post expects *red fox* because a model read the post — eval labels stay out of production code paths. This is the third entry in the cost ledger's kind enum (~12 extra calls, trivial).
 
 **Gate order** (first failure ends evaluation of a candidate):
 
@@ -29,7 +29,7 @@ Fix: decision order and inputs (subject-level semantics vs category vs similarit
 - **Gate 1 — Taxonomy conflict** (`config/taxonomy.json`): each subject maps to `{coarse_category, subject_group}` (e.g. red fox → `animal/fox`, gray wolf → `animal/wolf-canid`, husky → `animal/dog`). Conflict rules: different coarse category → REJECT `"Category mismatch: expected ${post.category}, detected ${image.category}"`; same category, different subject_group → REJECT `"Subject mismatch: expected ${post.subject}, detected ${image.subject}"`. Strictness is deliberate — the guard's brand is *never the wolf*; near-miss posts classify to their dominant subject and incompatible species are refused, while ranking discriminates among compatible ones.
 - **Gate 2 — Similarity threshold**: cosine(post_embedding, image_embedding) ≥ SIM_THRESHOLD, else candidate cannot win.
 - **Gate 3 — Confidence gate**: image.confidence ≥ CONF_GATE (≥ flag floor; sweep may raise it), else contributes a LOW_CONFIDENCE reason.
-- **Verdict assembly**: best surviving candidate → `SUGGESTED`; otherwise → `NO_CONFIDENT_MATCH`.
+- **Verdict assembly**: gates rule PER CANDIDATE — each candidate ends SUGGESTED (all gates passed) or REJECTED (first failing gate's reason recorded). The calling surface aggregates: ranked SUGGESTED entries by score at the top; when zero candidates survive, the aggregate verdict is NO_CONFIDENT_MATCH carrying the pooled reasons (best near-miss scores, conflict counts, empty-pool note).
 
 **Threshold selection method** (the procedure — values are build outputs): run the pipeline over the seeded corpus once; sweep SIM_THRESHOLD × CONF_GATE over a grid; at each point compute top-1 precision on the labeled eval set AND the false-accept count against known-bad pairs (wolf-forced-on-fox, matchless-post tops); select the operating point with maximum precision subject to ZERO known-bad acceptances, tie-breaking toward catching more matchless posts; emit chosen values + the sweep CSV into `config/thresholds.json` with provenance; README publishes both numbers. Re-run whenever corpus or eval set grows.
 

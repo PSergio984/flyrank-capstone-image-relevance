@@ -8,7 +8,7 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 
 ## Notes
 
-- **Domain**: vision-AI backend — Gemini Flash classifies ~45 images into validated tag JSON; captions and post text are embedded into one semantic space; a mismatch guard (tags + similarity threshold + confidence) rejects wrong pairings with explanations before a human sees them.
+- **Domain**: vision-AI backend — Gemini Flash (`gemini-3.7-flash` per the research findings) classifies ~45 images into validated tag JSON; captions and post text are embedded into one semantic space; a mismatch guard (tags + similarity threshold + confidence) rejects wrong pairings with explanations before a human sees them.
 - **Locked decisions** (charting session): destination = submitted capstone · fresh dedicated repo (this one) · Node.js + Express · Gemini Flash free tier for vision + embeddings · core Section 6 boxes only, stretch goals out of scope · tracker = this local-markdown directory.
 - **Standing preferences**: user communicates tersely — keep narration compact. Interview defense is the standing goal: every build choice must stay explainable by the user in 2–3 lines. Windows / PowerShell 5.1 (no `&&`). Node ≥18 (local: v22). $0 iron rule — anything asking for a credit card is the wrong path. Never trust invalid model output. Evidence pasted as you go; at least one meaningful commit per working session.
 - **Skills**: when working any grilling ticket, call the Skill tool twice — "grilling" and "domain-modeling". Prototype tickets call "prototype". Research tickets call "research".
@@ -24,10 +24,12 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 - [Where do the blog posts come from?](tickets/04-posts-source.md): 12 hand-written seed posts in `seed/posts/`, including ≥2 deliberately matchless and ≥2 boundary-strainer posts.
 - [Which runner carries the background batch jobs?](tickets/05-batch-runner.md): pg-boss on the existing Postgres — idempotent natural-key jobs, per-call cost ledger rows written in-handler, budget guard, SQL-visible progress.
 - [What is the image metadata schema the vision model must return?](tickets/06-metadata-schema.md): shallow strict schema, coarse `category` enum + fine `subject` for guard discrimination; Zod safeParse is the only trust boundary; confidence <0.70 flags instead of accepting; repair-once then quarantine.
-- [How are image and post vectors embedded and stored?](tickets/07-embeddings-and-vectors.md): `gemini-embedding-001` @ 768 dims, SEMANTIC_SIMILARITY, manual L2 norm; plain `real[]` columns persisting model+dims; cosine computed in Node over ~50 rows.
+- [How are image and post vectors embedded and stored?](tickets/07-embeddings-and-vectors.md): `gemini-embedding-001` @ 768 dims, SEMANTIC_SIMILARITY, manual L2 norm; plain `real[]` columns persisting model+dims; cosine computed in Node over ~45 rows.
 - [What exactly makes a suggestion good enough? (mismatch guard rules)](tickets/08-mismatch-guard-rules.md): eligibility filter → taxonomy conflict gate (post expectations from a cached post-classification stage, never eval labels) → similarity gate → confidence gate; sweep-based threshold selection with zero-known-bad-acceptances constraint; versioned verdict/reasons response shape.
 - [What is the relational data model?](tickets/09-relational-data-model.md): seven tables under node-pg-migrate; suggestions table carries full guard provenance with unique(post,image,guard_version) idempotency; pipeline_stages owns retry idempotency and dead-letter alerts; cost ledger with budget-guard sum; Postgres declared in compose.
 - [What is the API surface?](tickets/10-api-surface.md): four public routes (health, ranked suggestions, image why-trail, review approve/reject) + four admin routes (forced-candidate probe, three batch triggers with double-dispatch guard, pipeline/cost observability); Zod at every boundary; capstone.yaml endpoint list aligned.
+- [Build the labeled eval set](tickets/11-build-labeled-eval-set.md): contract fixed — `eval/set.json` with case roles (8 clean / 2 boundary / 2 matchless), known-bad pairs as sweep constraints, validator gate; artifact itself is a build output.
+- [What is the proof and probe protocol?](tickets/12-proof-and-probe-protocol.md): one `scripts/probes.mjs` harness covering all six probes; per-box proof-format table for EVIDENCE.md; proofs at phase gates + full re-run pre-submission; five-step submission checklist.
 
 ## Not yet specified
 
