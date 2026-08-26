@@ -19,3 +19,5 @@ The build needs a Gemini API key (vision + embeddings, free tier, no credit card
 4. Add `GEMINI_API_KEY=your_key_here` placeholder to `.env.example`.
 
 Resolves when the key exists and one cheap smoke call succeeds.
+
+**Scaffolded already**: `.env` (gitignored) and `.env.example` exist with `GEMINI_API_KEY`, `PORT`, `DATABASE_URL`, `ADMIN_TOKEN`. Remaining human steps: 1–2 above, then paste the key into `.env`'s `GEMINI_API_KEY=`.
