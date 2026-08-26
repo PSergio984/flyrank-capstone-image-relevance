@@ -26,12 +26,14 @@ The capstone is submitted: `PSergio984/flyrank-capstone-image-relevance` passes 
 - [What is the image metadata schema the vision model must return?](tickets/06-metadata-schema.md): shallow strict schema, coarse `category` enum + fine `subject` for guard discrimination; Zod safeParse is the only trust boundary; confidence <0.70 flags instead of accepting; repair-once then quarantine.
 - [How are image and post vectors embedded and stored?](tickets/07-embeddings-and-vectors.md): `gemini-embedding-001` @ 768 dims, SEMANTIC_SIMILARITY, manual L2 norm; plain `real[]` columns persisting model+dims; cosine computed in Node over ~50 rows.
 - [What exactly makes a suggestion good enough? (mismatch guard rules)](tickets/08-mismatch-guard-rules.md): eligibility filter → taxonomy conflict gate (post expectations from a cached post-classification stage, never eval labels) → similarity gate → confidence gate; sweep-based threshold selection with zero-known-bad-acceptances constraint; versioned verdict/reasons response shape.
+- [What is the relational data model?](tickets/09-relational-data-model.md): seven tables under node-pg-migrate; suggestions table carries full guard provenance with unique(post,image,guard_version) idempotency; pipeline_stages owns retry idempotency and dead-letter alerts; cost ledger with budget-guard sum; Postgres declared in compose.
+- [What is the API surface?](tickets/10-api-surface.md): four public routes (health, ranked suggestions, image why-trail, review approve/reject) + four admin routes (forced-candidate probe, three batch triggers with double-dispatch guard, pipeline/cost observability); Zod at every boundary; capstone.yaml endpoint list aligned.
 
 ## Not yet specified
 
 - Actual similarity-threshold values and the defended top-1 precision number — graduate once the labeled eval set exists and the sweep has run.
 - Vision prompt wording and reliability quirks (flag-rate behavior on real batches) — graduates after the first real pipeline runs.
-- Seed + run story details (compose service layout beyond Postgres, seed command shape) — graduates once batch runner and data model are chosen.
+- Seed + run story final shape (exact commands in README/capstone.yaml) — pure build output now that compose-Postgres, migrate runner, seed sources are all decided.
 - Eval-set growth policy during tuning ("grow slightly as you go") — graduates when the first real precision numbers exist.
 - Live free-tier RPM/RPD verification and structured-output refusal payload shape — one cheap verification pass during pipeline implementation.
 
