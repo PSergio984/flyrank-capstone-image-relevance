@@ -10,22 +10,22 @@ const paramsSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
-router.post('/:id/approve', async (req, res, next) => {
+async function handleReview(req, res, next, action) {
+  const statusMap = { approve: 'approved', reject: 'rejected' };
+  const targetStatus = statusMap[action];
   try {
     const { id } = paramsSchema.parse(req.params);
     const s = await query('SELECT id, status FROM suggestions WHERE id=$1', [id]);
     if (s.rows.length === 0) {
       return res.status(404).json({ error: { code: 'NOT_FOUND', details: `suggestion ${id} not found` } });
     }
-    // Idempotent: if already approved, return current
-    if (s.rows[0].status === 'approved') {
+    if (s.rows[0].status === targetStatus) {
       const cur = await query('SELECT * FROM suggestions WHERE id=$1', [id]);
       return res.json({ suggestion: cur.rows[0] });
     }
-    // Guard verdict REJECTED cannot be approved? Actually machine never self-approves forced passes; human can approve forced? For now allow any pending.
     await query('BEGIN');
-    await query(`UPDATE suggestions SET status='approved' WHERE id=$1`, [id]);
-    await query(`INSERT INTO review_events (suggestion_id, action, actor) VALUES ($1,'approve','reviewer')`, [id]);
+    await query(`UPDATE suggestions SET status=$1 WHERE id=$2`, [targetStatus, id]);
+    await query(`INSERT INTO review_events (suggestion_id, action, actor) VALUES ($1,$2,'reviewer')`, [id, action]);
     await query('COMMIT');
     const updated = await query('SELECT * FROM suggestions WHERE id=$1', [id]);
     return res.json({ suggestion: updated.rows[0] });
@@ -36,32 +36,9 @@ router.post('/:id/approve', async (req, res, next) => {
     }
     next(err);
   }
-});
+}
 
-router.post('/:id/reject', async (req, res, next) => {
-  try {
-    const { id } = paramsSchema.parse(req.params);
-    const s = await query('SELECT id, status FROM suggestions WHERE id=$1', [id]);
-    if (s.rows.length === 0) {
-      return res.status(404).json({ error: { code: 'NOT_FOUND', details: `suggestion ${id} not found` } });
-    }
-    if (s.rows[0].status === 'rejected') {
-      const cur = await query('SELECT * FROM suggestions WHERE id=$1', [id]);
-      return res.json({ suggestion: cur.rows[0] });
-    }
-    await query('BEGIN');
-    await query(`UPDATE suggestions SET status='rejected' WHERE id=$1`, [id]);
-    await query(`INSERT INTO review_events (suggestion_id, action, actor) VALUES ($1,'reject','reviewer')`, [id]);
-    await query('COMMIT');
-    const updated = await query('SELECT * FROM suggestions WHERE id=$1', [id]);
-    return res.json({ suggestion: updated.rows[0] });
-  } catch (err) {
-    await query('ROLLBACK').catch(() => {});
-    if (err instanceof z.ZodError) {
-      return res.status(400).json({ error: { code: 'BAD_REQUEST', details: err.issues.map((i) => i.message).join('; ') } });
-    }
-    next(err);
-  }
-});
+router.post('/:id/approve', (req, res, next) => handleReview(req, res, next, 'approve'));
+router.post('/:id/reject', (req, res, next) => handleReview(req, res, next, 'reject'));
 
 module.exports = router;

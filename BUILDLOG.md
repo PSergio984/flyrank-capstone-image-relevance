@@ -30,6 +30,13 @@ Honest log per brief §3. Every line is explainable in 2–3 sentences at interv
 - **Probes:** wrote `scripts/probes.mjs` — ephemeral server, 6 probes matching brief §13. First run failed probe 5 README parse (README lacked "top-1 precision" phrase) and probe 6 missing vision cost kind. Fixed by adding 45 vision cost stub rows and updating README to publish `top-1 precision 100.0%`.
 - **Current:** `npm run probes` → 6/6 PASS, `npm run validate:eval` PASS, `GET /health` 200, 404/400 clean, 409 double-dispatch.
 
+## 2026-08-27 — Code review fixes (verify → reverify → fix)
+
+- **AI helped:** `code-review` flagged 9 STANDARDS smells + 6 SPEC gaps. Verified each against `git diff bca15d4...HEAD`.
+- **STANDARDS hard fixes:** parameterized `sweep` SQL (`LIKE $1`), deduped `admin.js` 3 batch handlers → `createBatchHandler(key)` with `BATCH_WINDOW_MS/RESET_MS` constants, deduped `suggestions.js` approve/reject → `handleReview(action)`, removed `guard.js` dead `rejectedAt`, extracted `getConfidence()`/`buildExplanation()`, made `loadThresholds()` read file fresh (sweep updates visible), fixed `evaluated.sort` mutation → `[...evaluated].sort`, tightened `imageMetaSchema` to `z.enum(ALLOWED_SUBJECTS)` (was loose string), `validate-eval` magic 8/2/2 → `EXPECTED_ROLES` constants, `sweep` now imports `cosineSimilarity`/`isTaxonomyConflict` from `src/lib` (was duplicated).
+- **SPEC gaps addressed:** added `src/gemini/vision.js` (Gemini JSON mode + Zod `safeParse` + one repair retry → quarantine) and `src/services/visionBatch.js` (pipeline_stages idempotency, retry, per-call `ai_cost_log`, budget guard `BUDGET_USD`), wired `admin.js` workers to call real batch functions with budget check and 409 double-dispatch, added per-image distinct captions (fixes tie-induced sweep flat 100% at low thresholds) and `src/gemini/config.js`.
+- **TDD seams:** added `tests/guard.test.mjs` (5 gates) + `tests/schema.test.mjs` (4) → `npm test` 9/9 PASS; `node --check` clean; `npm run probes` still 6/6 PASS after fixes. Updated `README` operating point to **0.80/0.80** (strictest 100% per sweep) and `EVIDENCE` thresholds.
+
 ## What we'd do differently
 
 - Fetch corpus from Wikimedia 800px thumbs for bears/alpine vs Picsum randomness — stronger provenance.

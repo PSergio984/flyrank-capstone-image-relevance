@@ -4,7 +4,7 @@ Understand an image library through vision, embed captions and posts into one se
 
 **Stack:** Node.js + Express · Gemini Flash (`gemini-2.5-flash` vision, `gemini-embedding-001` 768-d) · PostgreSQL 16 (compose) · Zod · $0 free tier
 **Corpus:** 45 images across 5 categories (17 animal with fox/wolf/husky lookalikes, 11 landscape, 6 urban, 6 food, 5 vehicle) at ≤800px, ~3.6 MB committed in `corpus/images/` plus deterministic `scripts/fetch-corpus.mjs` — manifest `corpus/manifest.json` is the provenance record.
-**Eval:** 12 labeled posts (8 clean / 2 boundary / 2 matchless) in `eval/set.json`; **top-1 precision 100.0% (12/12)** at operating point **similarity ≥ 0.80, confidence ≥ 0.70** (flag floor 0.70) — sweep CSV `config/thresholds-sweep.csv`, thresholds pinned in `config/thresholds.json` (`guard-r1`).
+**Eval:** 12 labeled posts (8 clean / 2 boundary / 2 matchless) in `eval/set.json`; **top-1 precision 100.0% (12/12)** at operating point **similarity ≥ 0.80, confidence ≥ 0.80** (flag floor 0.70) — sweep CSV `config/thresholds-sweep.csv`, thresholds pinned in `config/thresholds.json` (`guard-r1`).
 
 ## Quick start
 
@@ -52,7 +52,7 @@ Posts ──► embed(body) ──► embeddings ─┐
                                      │         │  Gate 0 eligibility (validated, not flagged/quarantined)
                                      │         │  Gate 1 taxonomy (config/taxonomy.json)  fox≠wolf even though both animal
                                      │         │  Gate 2 similarity ≥0.80 (sweep-derived)
-                                     │         │  Gate 3 confidence ≥0.70
+                                     │         │  Gate 3 confidence ≥0.80 (flag floor 0.70)
                                      │         └─► verdict SUGGESTED / REJECTED / NO_CONFIDENT_MATCH + reasons (guard-r1)
                                      └─► Post Classification stage (cached on posts.expected_subject/category)
 
@@ -87,13 +87,13 @@ Ordered gates over an eligibility pool; forced candidates skip the pool but not 
   "verdict": "SUGGESTED | REJECTED | NO_CONFIDENT_MATCH",
   "reasons": [{"code":"SUBJECT_CONFLICT|CATEGORY_CONFLICT|BELOW_SIMILARITY|LOW_CONFIDENCE|EMPTY_POOL","detail":"..."}],
   "guard_version": "guard-r1",
-  "thresholds_used": {"similarity": 0.8, "confidence": 0.7}
+  "thresholds_used": {"similarity": 0.8, "confidence": 0.8}
 }
 ```
 
 Taxonomy: `config/taxonomy.json` maps `red fox→animal/fox`, `gray wolf→animal/wolf-canid`, `siberian husky→animal/dog` — same coarse category, different `subject_group` is a hard `SUBJECT_CONFLICT`, not a ranking penalty. Post expectations come from the cached `post_classify` stage (same Zod stack, 12 calls), never from eval labels.
 
-Thresholds: grid sweep `similarity 0.30..0.90 × confidence 0.60/0.70/0.80` over `eval/set.json` (8 clean / 2 boundary / 2 matchless + 6 known-bad pairs as hard constraints). Pick max precision with zero known-bad acceptances, tie-break toward stricter threshold that still keeps 100%. Result **0.80 / 0.70 → 100.0% (12/12)**, CSV at `config/thresholds-sweep.csv`.
+Thresholds: grid sweep `similarity 0.30..0.90 × confidence 0.60/0.70/0.80` over `eval/set.json` (8 clean / 2 boundary / 2 matchless + 6 known-bad pairs as hard constraints). Pick max precision with zero known-bad acceptances, tie-break toward stricter threshold that still keeps 100%. Result **0.80 / 0.80 → 100.0% (12/12)**, CSV at `config/thresholds-sweep.csv`.
 
 ## Evaluation
 
@@ -106,7 +106,7 @@ Probe harness `scripts/probes.mjs` boots an ephemeral server and runs all six br
 - Corpus is hand-curated and small (45); vision captions for Picsum fallback images are note-derived, not true Gemini vision at seed time — real vision pipeline (with repair-then-quarantine) exists but seed shortcuts it for deterministic eval. A full run would call Gemini vision per image and pay ~45 vision + ~56 embedding calls (still free tier, paced 1–2s).
 - Embeddings are plain `real[]` with Node cosine (no pgvector); fine at 45 rows, would need pgvector/ANN beyond ~10k.
 - `siberian husky` vs `gray wolf` discrimination relies solely on taxonomy subject_group; visual embedding alone would still confuse them without the guard.
-- Admin batch routes are stubbed with 409 double-dispatch guard but not yet backed by real pg-boss workers (workers would add per-call cost rows, budget guard, retry with backoff).
+- Admin batch routes use 409 double-dispatch guard and background workers (`src/services/visionBatch.js` with retry+budget guard, `embeddings` batch with per-call cost rows) — pg-boss wiring is code-ready (natural-key idempotency, `pipeline_stages`, dead letters) but runs in-process for the $0 demo; swap to `pg-boss` `Boss.start()` for prod.
 - No frontend beyond validated endpoints; review table is API only.
 
 ## Project layout

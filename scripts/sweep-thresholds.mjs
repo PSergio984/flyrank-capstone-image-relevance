@@ -4,10 +4,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import 'dotenv/config';
+import { createRequire } from 'node:module';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 
+const require2 = createRequire(import.meta.url);
+const { cosineSimilarity: cosine } = require2('../src/lib/cosine.js');
+const { isTaxonomyConflict } = require2('../src/lib/taxonomy.js');
 const taxonomy = JSON.parse(fs.readFileSync(path.join(root, 'config/taxonomy.json'), 'utf8'));
 const evalSet = JSON.parse(fs.readFileSync(path.join(root, 'eval/set.json'), 'utf8'));
 
@@ -37,24 +41,6 @@ async function main() {
   const imgEmbs = await pool.query(`SELECT entity_id, vector FROM embeddings WHERE entity_type='image_caption' AND model='gemini-embedding-001'`);
   const postVec = new Map(postEmbs.rows.map(r => [r.entity_id, r.vector]));
   const imgVec = new Map(imgEmbs.rows.map(r => [r.entity_id, r.vector]));
-
-  function cosine(a,b){
-    let dot=0, an=0, bn=0;
-    for(let i=0;i<a.length;i++){ dot+=a[i]*b[i]; an+=a[i]*a[i]; bn+=b[i]*b[i]; }
-    return dot / (Math.sqrt(an)*Math.sqrt(bn));
-  }
-  function isTaxonomyConflict(expected, detected){
-    const eInfo = taxonomy.subjects[expected.subject];
-    const dInfo = taxonomy.subjects[detected.subject];
-    if(!eInfo || !dInfo){
-      if(expected.category!==detected.category) return {code:'CATEGORY_CONFLICT'};
-      if(expected.subject!==detected.subject) return {code:'SUBJECT_CONFLICT'};
-      return null;
-    }
-    if(eInfo.coarse_category!==dInfo.coarse_category) return {code:'CATEGORY_CONFLICT'};
-    if(eInfo.subject_group!==dInfo.subject_group) return {code:'SUBJECT_CONFLICT'};
-    return null;
-  }
 
   // Build eval entries with expected subject group
   const cases = evalSet.cases.map(c => ({

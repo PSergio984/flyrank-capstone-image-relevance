@@ -21,7 +21,8 @@ console.log(`Manifest: ${manifest.length} images`);
 console.log(`Posts: ${slugs.length} slugs`);
 console.log(`Eval cases: ${evalSet.cases.length}, known_bad: ${evalSet.known_bad_pairs.length}`);
 
-// Role counts
+// Role counts — per ticket 11 contract: 8 clean / 2 boundary / 2 matchless
+const EXPECTED_ROLES = { clean: 8, boundary: 2, matchless: 2 };
 const roles = { clean: 0, boundary: 0, matchless: 0 };
 for (const c of evalSet.cases) {
   roles[c.role] = (roles[c.role] || 0) + 1;
@@ -34,9 +35,9 @@ for (const c of evalSet.cases) {
     if (!manifestIds.has(c.correct_image_id)) fail(`correct_image_id not in manifest: ${c.correct_image_id}`);
   }
 }
-if (roles.clean !== 8) fail(`expected 8 clean, got ${roles.clean}`);
-if (roles.boundary !== 2) fail(`expected 2 boundary, got ${roles.boundary}`);
-if (roles.matchless !== 2) fail(`expected 2 matchless, got ${roles.matchless}`);
+if (roles.clean !== EXPECTED_ROLES.clean) fail(`expected ${EXPECTED_ROLES.clean} clean, got ${roles.clean}`);
+if (roles.boundary !== EXPECTED_ROLES.boundary) fail(`expected ${EXPECTED_ROLES.boundary} boundary, got ${roles.boundary}`);
+if (roles.matchless !== EXPECTED_ROLES.matchless) fail(`expected ${EXPECTED_ROLES.matchless} matchless, got ${roles.matchless}`);
 console.log(`Roles ok: clean=${roles.clean} boundary=${roles.boundary} matchless=${roles.matchless}`);
 
 // known_bad_pairs validation
@@ -54,6 +55,7 @@ for (const c of evalSet.cases) {
   if (seen.has(c.post_slug)) fail(`duplicate post_slug in cases: ${c.post_slug}`);
   seen.add(c.post_slug);
 }
-if (seen.size !== 12) fail(`expected 12 unique post_slugs, got ${seen.size}`);
+const EXPECTED_TOTAL = Object.values(EXPECTED_ROLES).reduce((a,b)=>a+b,0);
+if (seen.size !== EXPECTED_TOTAL) fail(`expected ${EXPECTED_TOTAL} unique post_slugs, got ${seen.size}`);
 
 console.log('ALL EVAL VALIDATIONS PASSED');

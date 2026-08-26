@@ -14,7 +14,8 @@
     "validate:eval": "node scripts/validate-eval.mjs",
     "sweep": "node scripts/sweep-thresholds.mjs",
     "probes": "node scripts/probes.mjs",
-    "fetch:corpus": "node scripts/fetch-corpus.mjs"
+    "fetch:corpus": "node scripts/fetch-corpus.mjs",
+    "test": "node --test tests/*.mjs"
   },
   "keywords": [],
   "author": "Eric Gabriel F. Manabat",

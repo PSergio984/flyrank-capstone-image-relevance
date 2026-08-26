@@ -86,7 +86,7 @@ GET /posts/7/images  → 200
 {
   "verdict":"SUGGESTED",
   "guard_version":"guard-r1",
-  "thresholds_used":{"similarity":0.8,"confidence":0.7},
+  "thresholds_used":{"similarity":0.8,"confidence":0.8},
   "suggestions":[
     {"image_id":1,"file_path":"corpus/images/animal-redfox-01.jpg","subject":"red fox","category":"animal","score":0.8891,"explanation":"matched red fox for expected red fox (similarity 0.889 >= 0.8, caption confidence 0.92)"},
     {"image_id":4,"file_path":"corpus/images/animal-redfox-04.jpg","subject":"red fox","category":"animal","score":0.854,"explanation":"..."}
@@ -113,7 +113,7 @@ POST /admin/probes/force-candidate {"post_id":7,"image_id":5}
   "post_id":7,"image_id":5,"score":0.7829,"verdict":"REJECTED",
   "reasons":[{"code":"SUBJECT_CONFLICT","detail":"Subject mismatch: expected red fox, detected gray wolf"}],
   "explanation":"Subject mismatch: expected red fox, detected gray wolf",
-  "guard_version":"guard-r1","thresholds_used":{"similarity":0.8,"confidence":0.7},
+  "guard_version":"guard-r1","thresholds_used":{"similarity":0.8,"confidence":0.8},
   "suggestion_id":1,"status":"rejected_by_guard"
 }
 ```
@@ -129,7 +129,7 @@ Every `REJECTED`/`NO_CONFIDENT_MATCH` carries `reasons[]` with `code` and `detai
 - `Category mismatch: expected animal, detected landscape`
 - `Subject mismatch: expected red fox, detected gray wolf`
 - `Similarity 0.732 < threshold 0.8`
-- `Image confidence 0.60 < threshold 0.7`
+- `Image confidence 0.60 < threshold 0.8` (flag floor 0.70, operating 0.80)
 
 Inspect via `GET /images/:id` why-trail `suggestions[]` array.
 
@@ -139,7 +139,7 @@ Probe 4 matchless posts:
 
 ```
 GET /posts/1/images  (abstract-philosophy) → 200
-{"verdict":"NO_CONFIDENT_MATCH","guard_version":"guard-r1","thresholds_used":{"similarity":0.8,"confidence":0.7},
+{"verdict":"NO_CONFIDENT_MATCH","guard_version":"guard-r1","thresholds_used":{"similarity":0.8,"confidence":0.8},
  "reasons":[{"code":"CATEGORY_CONFLICT","detail":"No candidate cleared all gates; top similarity 0.733"},
             {"code":"SUBJECT_CONFLICT","detail":"44 candidates rejected by taxonomy gate"}],
  "suggestions":[]}
@@ -204,9 +204,9 @@ Sweep:
 
 ```
 > npm run sweep
-sim=0.8 conf=0.7 => 12/12 100.0% badFails=0 PASS
+sim=0.8 conf=0.8 => 12/12 100.0% badFails=0 PASS
 ...
-Wrote config/thresholds.json (similarity 0.8, confidence 0.7, guard-r1, precision 1.0)
+Wrote config/thresholds.json (similarity 0.8, confidence 0.8, guard-r1, precision 1.0)
 Wrote config/thresholds-sweep.csv
 ```
 

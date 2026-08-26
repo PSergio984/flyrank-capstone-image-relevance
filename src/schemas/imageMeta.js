@@ -24,11 +24,7 @@ const ALLOWED_SUBJECTS = [
 
 const imageMetaSchema = z
   .object({
-    subject: z
-      .string()
-      .min(2)
-      .max(60)
-      .refine((s) => s === s.toLowerCase(), { message: 'subject must be lowercase' }),
+    subject: z.enum(ALLOWED_SUBJECTS),
     category: z.enum(CATEGORIES),
     attributes: z.array(z.string().min(2).max(30)).min(3).max(6),
     caption: z.string().min(8).max(160),
@@ -38,7 +34,7 @@ const imageMetaSchema = z
 
 const postClassifySchema = z
   .object({
-    subject: z.string().min(2).max(60),
+    subject: z.enum([...ALLOWED_SUBJECTS, 'none']),
     category: z.enum([...CATEGORIES, 'none']),
     confidence: z.number().min(0).max(1),
   })
