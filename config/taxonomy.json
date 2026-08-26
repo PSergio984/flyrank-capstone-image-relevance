@@ -1,0 +1,22 @@
+{
+  "version": "taxonomy-v1",
+  "description": "Subject -> {coarse_category, subject_group} mapping. Guard gate 1 uses this to reject category/subject mismatches. Same category but different group = SUBJECT_CONFLICT; different coarse = CATEGORY_CONFLICT.",
+  "subjects": {
+    "red fox": { "coarse_category": "animal", "subject_group": "fox" },
+    "gray wolf": { "coarse_category": "animal", "subject_group": "wolf-canid" },
+    "siberian husky": { "coarse_category": "animal", "subject_group": "dog" },
+    "brown bear": { "coarse_category": "animal", "subject_group": "bear" },
+    "white-tailed deer": { "coarse_category": "animal", "subject_group": "deer" },
+    "alpine mountain": { "coarse_category": "landscape", "subject_group": "mountain" },
+    "forest trail": { "coarse_category": "landscape", "subject_group": "forest" },
+    "desert dune": { "coarse_category": "landscape", "subject_group": "desert" },
+    "lake reflection": { "coarse_category": "landscape", "subject_group": "lake" },
+    "city skyline": { "coarse_category": "urban", "subject_group": "city" },
+    "historic building": { "coarse_category": "urban", "subject_group": "building" },
+    "pasta dish": { "coarse_category": "food", "subject_group": "pasta" },
+    "fruit bowl": { "coarse_category": "food", "subject_group": "fruit" },
+    "red car": { "coarse_category": "vehicle", "subject_group": "car" },
+    "mountain bike": { "coarse_category": "vehicle", "subject_group": "bike" }
+  },
+  "categories": ["animal", "landscape", "urban", "food", "vehicle"]
+}

@@ -2,6 +2,10 @@
 
 const express = require('express');
 const healthRoute = require('./routes/health');
+const postsRoute = require('./routes/posts');
+const imagesRoute = require('./routes/images');
+const suggestionsRoute = require('./routes/suggestions');
+const adminRoute = require('./routes/admin');
 
 function createApp() {
   const app = express();
@@ -10,6 +14,10 @@ function createApp() {
 
   // Public plane.
   app.use('/health', healthRoute);
+  app.use('/posts', postsRoute);
+  app.use('/images', imagesRoute);
+  app.use('/suggestions', suggestionsRoute);
+  app.use('/admin', adminRoute);
 
   // Unknown route -> clean 404 (never a stack trace).
   app.use((req, res) => {

@@ -7,8 +7,14 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "migrate": "node -r dotenv/config node_modules/node-pg-migrate/bin/node-pg-migrate -m migrations up",
+    "migrate:down": "node -r dotenv/config node_modules/node-pg-migrate/bin/node-pg-migrate -m migrations down",
     "compose:up": "docker compose up -d db",
-    "probes": "node scripts/probes.mjs"
+    "seed": "node scripts/seed.mjs",
+    "embed": "node scripts/embed.mjs",
+    "validate:eval": "node scripts/validate-eval.mjs",
+    "sweep": "node scripts/sweep-thresholds.mjs",
+    "probes": "node scripts/probes.mjs",
+    "fetch:corpus": "node scripts/fetch-corpus.mjs"
   },
   "keywords": [],
   "author": "Eric Gabriel F. Manabat",

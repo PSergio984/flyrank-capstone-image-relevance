@@ -1,0 +1,65 @@
+{
+  "cases": [
+    { "post_slug": "fox-behavior", "correct_image_id": "animal-redfox-01", "role": "clean" },
+    { "post_slug": "wolf-pack", "correct_image_id": "animal-graywolf-01", "role": "clean" },
+    { "post_slug": "husky-training", "correct_image_id": "animal-husky-01", "role": "clean" },
+    { "post_slug": "bear-habitat", "correct_image_id": "animal-bear-01", "role": "clean" },
+    { "post_slug": "deer-meadow", "correct_image_id": "animal-deer-01", "role": "clean" },
+    { "post_slug": "alpine-sunrise", "correct_image_id": "landscape-alpine-02", "role": "clean" },
+    { "post_slug": "forest-trail-mist", "correct_image_id": "landscape-forest-03", "role": "clean" },
+    { "post_slug": "city-dusk", "correct_image_id": "urban-city-02", "role": "clean" },
+    { "post_slug": "fox-vs-wolf-comparison", "correct_image_id": "animal-redfox-02", "role": "boundary" },
+    { "post_slug": "husky-wolf-lookalike", "correct_image_id": "animal-husky-02", "role": "boundary" },
+    { "post_slug": "underwater-coral", "correct_image_id": null, "role": "matchless" },
+    { "post_slug": "abstract-philosophy", "correct_image_id": null, "role": "matchless" }
+  ],
+  "known_bad_pairs": [
+    {
+      "post_slug": "fox-behavior",
+      "image_id": "animal-graywolf-01",
+      "expect": "REJECTED",
+      "reason_code": "SUBJECT_CONFLICT",
+      "note": "wolf must never illustrate the fox post (Probe 3)"
+    },
+    {
+      "post_slug": "fox-behavior",
+      "image_id": "animal-husky-01",
+      "expect": "REJECTED",
+      "reason_code": "SUBJECT_CONFLICT",
+      "note": "husky lookalike must not win over fox"
+    },
+    {
+      "post_slug": "fox-vs-wolf-comparison",
+      "image_id": "animal-graywolf-02",
+      "expect": "REJECTED",
+      "reason_code": "SUBJECT_CONFLICT",
+      "note": "boundary straining: wolf must lose on fox-dominant post"
+    },
+    {
+      "post_slug": "husky-wolf-lookalike",
+      "image_id": "animal-graywolf-03",
+      "expect": "REJECTED",
+      "reason_code": "SUBJECT_CONFLICT",
+      "note": "wolf must not win on husky-dominant lookalike post"
+    },
+    {
+      "post_slug": "wolf-pack",
+      "image_id": "animal-redfox-03",
+      "expect": "REJECTED",
+      "reason_code": "SUBJECT_CONFLICT",
+      "note": "fox must never illustrate the wolf post"
+    },
+    {
+      "post_slug": "underwater-coral",
+      "image_id": "landscape-alpine-01",
+      "expect": "REJECTED",
+      "reason_code": "CATEGORY_CONFLICT",
+      "note": "marine post vs mountain image: category mismatch"
+    }
+  ],
+  "meta": {
+    "version": 1,
+    "created": "2026-08-26",
+    "description": "12 posts: 8 clean / 2 boundary / 2 matchless per ticket 11. known_bad_pairs encode zero-acceptance constraints for threshold sweep."
+  }
+}

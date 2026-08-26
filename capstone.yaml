@@ -1,0 +1,15 @@
+run: docker compose up -d db && npm run migrate && npm run seed && npm start
+seed: npm run seed
+test: npm run probes
+base_url: http://localhost:3000
+endpoints:
+  health: GET /health
+  suggestions: GET /posts/:id/images
+  image_detail: GET /images/:id
+  force_candidate: POST /admin/probes/force-candidate
+  pipeline: GET /admin/pipeline
+  review_approve: POST /suggestions/:id/approve
+  review_reject: POST /suggestions/:id/reject
+  vision_batch: POST /admin/jobs/vision-batch
+  embeddings_batch: POST /admin/jobs/embeddings-batch
+  classify_posts: POST /admin/jobs/classify-posts

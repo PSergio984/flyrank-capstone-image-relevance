@@ -1,0 +1,35 @@
+{
+  "version": "thresholds-v2-sweep",
+  "description": "Sweep-derived operating point maximizing top-1 precision under zero-known-bad constraint",
+  "flag_floor": 0.7,
+  "similarity_threshold": 0.8,
+  "confidence_threshold": 0.7,
+  "guard_version": "guard-r1",
+  "provenance": {
+    "method": "grid sweep",
+    "sim_grid": [
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7,
+      0.75,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "conf_grid": [
+      0.6,
+      0.7,
+      0.8
+    ],
+    "eval_set": "eval/set.json",
+    "chosen_operating_point": "max precision (100%) with highest similarity threshold retaining 100% (0.80) and flag-floor confidence 0.70; sweep shows 0.80/0.70 and 0.80/0.80 both 100%, 0.85 drops to 91.7%",
+    "precision": 1,
+    "correct": 12,
+    "total": 12,
+    "model_vision": "gemini-2.5-flash",
+    "model_embedding": "gemini-embedding-001@768",
+    "sweeptime": "2026-08-26T15:31:55.045Z"
+  }
+}
