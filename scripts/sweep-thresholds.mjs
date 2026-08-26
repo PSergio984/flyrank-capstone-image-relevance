@@ -122,13 +122,12 @@ async function main() {
         const postRow = postMap.get(kb.post_slug);
         if(!postRow) continue;
         const pVec = postVec.get(postRow.id);
-        // Find image by manifest id: need to map manifest id to DB id via file_path
-        const imgRow = images.rows.find(r=>r.file_path.includes(kb.image_id)) || [...(await pool.query(`SELECT id, subject, category, confidence FROM images WHERE file_path LIKE '%${kb.image_id}%'`)).rows][0];
-        // Actually search all images including flagged? For known bad we should search all images
-        const allImgs = await pool.query(`SELECT id, subject, category, confidence FROM images WHERE file_path LIKE '%${kb.image_id}%' LIMIT 1`);
+        // Find image by manifest id via file_path (parameterized to avoid injection)
+        const allImgs = await pool.query(`SELECT id, subject, category, confidence FROM images WHERE file_path LIKE $1 LIMIT 1`, [`%${kb.image_id}%`]);
         const img = allImgs.rows[0];
         if(!img) continue;
-        const iVec = imgVec.get(img.id) || (await pool.query(`SELECT vector FROM embeddings WHERE entity_type='image_caption' AND entity_id=${img.id} AND model='gemini-embedding-001'`)).rows[0]?.vector;
+        const iv = await pool.query(`SELECT vector FROM embeddings WHERE entity_type='image_caption' AND entity_id=$1 AND model='gemini-embedding-001'`, [img.id]);
+        const iVec = imgVec.get(img.id) || iv.rows[0]?.vector;
         let verdict = 'REJECTED';
         // Simulate gate evaluation for forced
         const tax = isTaxonomyConflict({subject: postRow.expected_subject, category: postRow.expected_category}, {subject: img.subject, category: img.category});
@@ -150,7 +149,7 @@ async function main() {
       console.log(`sim=${simThr} conf=${confThr} => ${correct}/${total} ${(precision*100).toFixed(1)}% badFails=${badFails} ${passKnownBad?'PASS':'FAIL BAD'}`);
 
       if(passKnownBad){
-        if(!best || precision > best.precision || (precision===best.precision && (best.simThr>simThr || correct>best.correct))){
+        if(!best || precision > best.precision || (precision===best.precision && (simThr > best.simThr || (simThr===best.simThr && confThr > best.confThr)))){
           best = { simThr, confThr, correct, total, precision, badFails, details };
         }
       }

@@ -24,12 +24,12 @@
       0.8
     ],
     "eval_set": "eval/set.json",
-    "chosen_operating_point": "max precision (100%) with highest similarity threshold retaining 100% (0.80) and flag-floor confidence 0.70; sweep shows 0.80/0.70 and 0.80/0.80 both 100%, 0.85 drops to 91.7%",
+    "chosen_operating_point": "0.80/0.70 (highest sim retaining 100%; 0.80/0.80 also 100% but 0.70 aligns with flag floor, more permissive on confidence)",
     "precision": 1,
     "correct": 12,
     "total": 12,
     "model_vision": "gemini-2.5-flash",
     "model_embedding": "gemini-embedding-001@768",
-    "sweeptime": "2026-08-26T15:31:55.045Z"
+    "sweeptime": "2026-08-26T16:15:16.761Z"
   }
 }
