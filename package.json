@@ -1,0 +1,28 @@
+{
+  "name": "flyrank-capstone-image-relevance",
+  "version": "0.1.0",
+  "description": "AI Image Understanding & Content Matching Engine - FlyRank Backend Track capstone",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node -r dotenv/config node_modules/node-pg-migrate/bin/node-pg-migrate -m migrations up",
+    "compose:up": "docker compose up -d db",
+    "probes": "node scripts/probes.mjs"
+  },
+  "keywords": [],
+  "author": "Eric Gabriel F. Manabat",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "@google/genai": "^1.16.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "node-pg-migrate": "^8.0.3",
+    "pg": "^8.16.3",
+    "pg-boss": "^11.0.6",
+    "zod": "^4.1.5"
+  }
+}
