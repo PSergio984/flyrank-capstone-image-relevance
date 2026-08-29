@@ -82,22 +82,8 @@ async function main() {
     const pc = await pool.query('SELECT count(*)::int as n FROM posts');
     console.log(`Posts: ${pc.rows[0].n}`);
 
-    // Seed expected classification cache for posts (post_classify stage) -- use deterministic mapping per eval set
-    // For demo, we run a lightweight classification based on slug keywords if not already set
-    const expectedMap = {
-      'fox-behavior': { subject: 'red fox', category: 'animal', confidence: 0.95 },
-      'wolf-pack': { subject: 'gray wolf', category: 'animal', confidence: 0.96 },
-      'husky-training': { subject: 'siberian husky', category: 'animal', confidence: 0.94 },
-      'bear-habitat': { subject: 'brown bear', category: 'animal', confidence: 0.93 },
-      'deer-meadow': { subject: 'white-tailed deer', category: 'animal', confidence: 0.92 },
-      'alpine-sunrise': { subject: 'alpine mountain', category: 'landscape', confidence: 0.95 },
-      'forest-trail-mist': { subject: 'forest trail', category: 'landscape', confidence: 0.94 },
-      'city-dusk': { subject: 'city skyline', category: 'urban', confidence: 0.93 },
-      'fox-vs-wolf-comparison': { subject: 'red fox', category: 'animal', confidence: 0.88 },
-      'husky-wolf-lookalike': { subject: 'siberian husky', category: 'animal', confidence: 0.89 },
-      'underwater-coral': { subject: 'none', category: 'none', confidence: 0.30 },
-      'abstract-philosophy': { subject: 'none', category: 'none', confidence: 0.30 },
-    };
+    // Seed expected classification cache — single source of truth per ticket 08 (was duplicated with admin)
+    const expectedMap = JSON.parse(fs.readFileSync(path.join(root, 'config/postExpectations.json'), 'utf8'));
     for (const [slug, exp] of Object.entries(expectedMap)) {
       await pool.query(
         `UPDATE posts SET expected_subject=$1, expected_category=$2, classify_confidence=$3, classified_at=now()

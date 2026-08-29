@@ -101,25 +101,11 @@ const BATCH_WORKERS = {
     return { done };
   },
   classify: async () => {
-    // Post classification batch: Zod-validated, cached, per-call cost log, retry shape mirrors vision
-    // Attempts live Gemini first (src/gemini/postClassify.js), falls back to deterministic expectedMap for $0 demo / tests
+    // Post classification batch: Zod-validated, cached, per-call cost log — single source of truth via config/postExpectations.json
     const { query: q } = require('../db/pool');
     const { postClassifySchema } = require('../schemas/imageMeta');
     const posts = await q(`SELECT id, slug, title, body FROM posts WHERE classified_at IS NULL`);
-    const expectedMap = {
-      'fox-behavior': { subject: 'red fox', category: 'animal', confidence: 0.95 },
-      'wolf-pack': { subject: 'gray wolf', category: 'animal', confidence: 0.96 },
-      'husky-training': { subject: 'siberian husky', category: 'animal', confidence: 0.94 },
-      'bear-habitat': { subject: 'brown bear', category: 'animal', confidence: 0.93 },
-      'deer-meadow': { subject: 'white-tailed deer', category: 'animal', confidence: 0.92 },
-      'alpine-sunrise': { subject: 'alpine mountain', category: 'landscape', confidence: 0.95 },
-      'forest-trail-mist': { subject: 'forest trail', category: 'landscape', confidence: 0.94 },
-      'city-dusk': { subject: 'city skyline', category: 'urban', confidence: 0.93 },
-      'fox-vs-wolf-comparison': { subject: 'red fox', category: 'animal', confidence: 0.88 },
-      'husky-wolf-lookalike': { subject: 'siberian husky', category: 'animal', confidence: 0.89 },
-      'underwater-coral': { subject: 'none', category: 'none', confidence: 0.30 },
-      'abstract-philosophy': { subject: 'none', category: 'none', confidence: 0.30 },
-    };
+    const expectedMap = require('../../config/postExpectations.json');
     // Preload Gemini module lazily so tests without GEMINI_API_KEY still pass via fallback
     let classifyPostValidated = null;
     try { classifyPostValidated = require('../gemini/postClassify').classifyPostValidated; } catch (_) { /* ignore */ }

@@ -1,0 +1,14 @@
+{
+  "fox-behavior": { "subject": "red fox", "category": "animal", "confidence": 0.95 },
+  "wolf-pack": { "subject": "gray wolf", "category": "animal", "confidence": 0.96 },
+  "husky-training": { "subject": "siberian husky", "category": "animal", "confidence": 0.94 },
+  "bear-habitat": { "subject": "brown bear", "category": "animal", "confidence": 0.93 },
+  "deer-meadow": { "subject": "white-tailed deer", "category": "animal", "confidence": 0.92 },
+  "alpine-sunrise": { "subject": "alpine mountain", "category": "landscape", "confidence": 0.95 },
+  "forest-trail-mist": { "subject": "forest trail", "category": "landscape", "confidence": 0.94 },
+  "city-dusk": { "subject": "city skyline", "category": "urban", "confidence": 0.93 },
+  "fox-vs-wolf-comparison": { "subject": "red fox", "category": "animal", "confidence": 0.88 },
+  "husky-wolf-lookalike": { "subject": "siberian husky", "category": "animal", "confidence": 0.89 },
+  "underwater-coral": { "subject": "none", "category": "none", "confidence": 0.30 },
+  "abstract-philosophy": { "subject": "none", "category": "none", "confidence": 0.30 }
+}
