@@ -11,12 +11,12 @@ const root = path.join(__dirname, '..');
 
 const require2 = createRequire(import.meta.url);
 const { cosineSimilarity: cosine } = require2('../src/lib/cosine.js');
-const { isTaxonomyConflict } = require2('../src/lib/taxonomy.js');
+const { isTaxonomyConflict, getSubjectInfo } = require2('../src/lib/taxonomy.js');
 const taxonomy = JSON.parse(fs.readFileSync(path.join(root, 'config/taxonomy.json'), 'utf8'));
 const evalSet = JSON.parse(fs.readFileSync(path.join(root, 'eval/set.json'), 'utf8'));
 
 function getSubjectGroup(subject) {
-  const info = taxonomy.subjects[subject];
+  const info = getSubjectInfo(subject);
   return info ? info.subject_group : null;
 }
 
@@ -34,7 +34,6 @@ async function main() {
   const posts = await pool.query(`SELECT id, slug, expected_subject, expected_category FROM posts ORDER BY id`);
   const postMap = new Map(posts.rows.map(r => [r.slug, r]));
   const images = await pool.query(`SELECT id, file_path, category, subject, confidence, flagged, status FROM images WHERE status='processed' AND flagged=false ORDER BY id`);
-  const imageMap = new Map(images.rows.map(r => [r.id, r]));
 
   // Load embeddings
   const postEmbs = await pool.query(`SELECT entity_id, vector FROM embeddings WHERE entity_type='post_body' AND model='gemini-embedding-001'`);
@@ -85,7 +84,7 @@ async function main() {
           const tax = isTaxonomyConflict({subject: postRow.expected_subject, category: postRow.expected_category}, {subject: img.subject, category: img.category});
           if(tax) continue;
           if(sim < simThr) continue;
-          if(parseFloat(img.confidence) < confThr) continue;
+          if(Number(img.confidence) < confThr) continue;
           if(sim > bestSim){ bestSim = sim; bestCand = img; }
         }
 
@@ -122,7 +121,7 @@ async function main() {
         } else {
           const sim = iVec && pVec ? cosine(pVec, iVec) : 0;
           if(sim < simThr) verdict='REJECTED';
-          else if(parseFloat(img.confidence) < confThr) verdict='REJECTED';
+          else if(Number(img.confidence) < confThr) verdict='REJECTED';
           else verdict='SUGGESTED';
         }
         if(verdict!=='REJECTED'){ badFails++; }

@@ -1,26 +1,11 @@
 'use strict';
 
 const { z } = require('zod');
+const taxonomy = require('../../config/taxonomy.json');
 
-const CATEGORIES = ['animal', 'landscape', 'urban', 'food', 'vehicle'];
-
-const ALLOWED_SUBJECTS = [
-  'red fox',
-  'gray wolf',
-  'siberian husky',
-  'brown bear',
-  'white-tailed deer',
-  'alpine mountain',
-  'forest trail',
-  'desert dune',
-  'lake reflection',
-  'city skyline',
-  'historic building',
-  'pasta dish',
-  'fruit bowl',
-  'red car',
-  'mountain bike',
-];
+// Single source of truth — taxonomy.json owns subjects/categories (shotgun surgery fix)
+const ALLOWED_SUBJECTS = Object.keys(taxonomy.subjects);
+const CATEGORIES = taxonomy.categories;
 
 const imageMetaSchema = z
   .object({

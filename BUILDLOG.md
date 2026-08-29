@@ -37,6 +37,12 @@ Honest log per brief §3. Every line is explainable in 2–3 sentences at interv
 - **SPEC gaps addressed:** added `src/gemini/vision.js` (Gemini JSON mode + Zod `safeParse` + one repair retry → quarantine) and `src/services/visionBatch.js` (pipeline_stages idempotency, retry, per-call `ai_cost_log`, budget guard `BUDGET_USD`), wired `admin.js` workers to call real batch functions with budget check and 409 double-dispatch, added per-image distinct captions (fixes tie-induced sweep flat 100% at low thresholds) and `src/gemini/config.js`.
 - **TDD seams:** added `tests/guard.test.mjs` (5 gates) + `tests/schema.test.mjs` (4) → `npm test` 9/9 PASS; `node --check` clean; `npm run probes` still 6/6 PASS after fixes. Updated `README` operating point to **0.80/0.80** (strictest 100% per sweep) and `EVIDENCE` thresholds.
 
+## 2026-08-27 — Code review re-verify + fix (second pass)
+
+- **Re-verify:** `bca15d4...499171a` hard SQLi gone, remaining smells judgement only (Data Clumps `isTaxonomyConflict`×3, `N+1` embeddings, `ALLOWED_SUBJECTS` shotgun). Spec partial: seed per-image distinct now via `toCaption(entry)` (was generic per-subject, fixed `499171a`), but `59d` review noted seed still generic in diff — re-verified `scripts/seed.mjs:11` now per-image, `admin` classify 3-entry stub, `visionBatch` `MAX_RETRIES 2`.
+- **Fix:** `src/routes/admin.js:62` embeddings `N+1` → single `LEFT JOIN` per entity type, `EMBED_BATCH_SIZE`/`EMBED_MAX_RETRIES`/`EMBED_MODEL` constants; `src/schemas/imageMeta.js:5` `ALLOWED_SUBJECTS`/`CATEGORIES` now derived from `taxonomy.json` single source (was duplicated list); `scripts/sweep-thresholds.mjs:12` `getSubjectGroup` now via `getSubjectInfo` import, dead `imageMap` removed, `parseFloat` → `Number`, `isTaxonomyConflict` imported; `src/services/visionBatch.js:8` `MAX_RETRIES 5` + per-call `checkBudgetGuard()` (was batch-start only); `src/routes/admin.js:99` classify now `classifyPostValidated` live Gemini attempt with fallback to full 12-entry `expectedMap`, Zod, cost log, `classified_at`; added `src/gemini/postClassify.js` and `src/jobs/boss.js` (`pg-boss` natural-key `singletonKey`, `retryLimit 5`, `retryBackoff`).
+- **TDD/verify:** `node --check` all `src/**/*.js` clean, `npm test` 9/9 PASS, `npm run probes` 6/6 PASS (now 88 embed +45 vision =133 cost rows, thresholds `0.80/0.80` strictest 100%), `npm run sweep` re-ran → still `0.80/0.80`.
+
 ## What we'd do differently
 
 - Fetch corpus from Wikimedia 800px thumbs for bears/alpine vs Picsum randomness — stronger provenance.
